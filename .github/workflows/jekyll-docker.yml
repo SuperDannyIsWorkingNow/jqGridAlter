@@ -20,12 +20,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      # --- 1. 設定 Ruby 環境 (新增) ---
+      # --- 1. 設定 Ruby 環境 (修正: 使用 '3.2' 替代 '3.x') ---
       # Jekyll 是一個 Ruby 專案，需要先設定 Ruby 環境
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.x' # 建議使用最新的穩定版本
+          ruby-version: '3.2' # <--- 修正為穩定的主要版本號 3.2
           bundler-cache: true # 啟用 Bundler 快取，加速 Gem 安裝
           cache-version: 1 # 當您更改 Gemfile 時，可以增加此版本號來強制重新快取
           
