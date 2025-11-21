@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
-    # 新增 permissions: 這是部署到 GitHub Pages 必需的權限設定
+    # 部署到 GitHub Pages 必需的權限設定
     permissions:
       contents: read
       pages: write
@@ -19,30 +19,35 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      # --- 1. 建構步驟 (使用您原本的 Docker 命令) ---
-      - name: Build the site in the jekyll/builder container
+      
+      # --- 1. 設定 Ruby 環境 (新增) ---
+      # Jekyll 是一個 Ruby 專案，需要先設定 Ruby 環境
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.x' # 建議使用最新的穩定版本
+          bundler-cache: true # 啟用 Bundler 快取，加速 Gem 安裝
+          cache-version: 1 # 當您更改 Gemfile 時，可以增加此版本號來強制重新快取
+          
+      # --- 2. 建構 Jekyll 網站 (替換原 Docker 步驟) ---
+      - name: Install dependencies and Build Jekyll site
         run: |
-          # 使用 Docker 容器來建構 Jekyll 網站
-          # 這裡假設您的靜態檔案會被建構到 _site 資料夾
-          docker run \
-            -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-            jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+          # 檢查並安裝所有 Gemfile 中的依賴
+          bundle install 
+          # 使用 Bundler 來執行 Jekyll 建構，--future 保持不變
+          bundle exec jekyll build --future
 
-      # --- 2. 部署設定步驟 (新增) ---
-      # 這是啟用 Pages 環境和 URL 的必要步驟
+      # --- 3. 部署設定步驟 (保持不變) ---
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      # --- 3. 上傳建構成品步驟 (新增) ---
-      # 將建構產生的 _site 資料夾打包並上傳為 Pages Artifact
+      # --- 4. 上傳建構成品步驟 (保持不變) ---
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '_site' # 指定 Jekyll 網站的輸出目錄
+          path: '_site' # Jekyll 預設的輸出目錄
 
-      # --- 4. 部署到 GitHub Pages (新增) ---
-      # 觸發 Pages 服務開始部署
+      # --- 5. 部署到 GitHub Pages (保持不變) ---
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
