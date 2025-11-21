@@ -1,4 +1,4 @@
-name: Jekyll site CI
+name: Jekyll site CI/CD
 
 on:
   push:
@@ -8,13 +8,43 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    
+    # 新增 permissions: 這是部署到 GitHub Pages 必需的權限設定
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the site in the jekyll/builder container
-      run: |
-        docker run \
-        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
-        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- 1. 建構步驟 (使用您原本的 Docker 命令) ---
+      - name: Build the site in the jekyll/builder container
+        run: |
+          # 使用 Docker 容器來建構 Jekyll 網站
+          # 這裡假設您的靜態檔案會被建構到 _site 資料夾
+          docker run \
+            -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
+            jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+
+      # --- 2. 部署設定步驟 (新增) ---
+      # 這是啟用 Pages 環境和 URL 的必要步驟
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # --- 3. 上傳建構成品步驟 (新增) ---
+      # 將建構產生的 _site 資料夾打包並上傳為 Pages Artifact
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site' # 指定 Jekyll 網站的輸出目錄
+
+      # --- 4. 部署到 GitHub Pages (新增) ---
+      # 觸發 Pages 服務開始部署
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        env:
+          ACTIONS_STEP_DEBUG: true # 可選：啟用詳細的除錯日誌
