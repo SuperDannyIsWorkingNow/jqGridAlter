@@ -1,0 +1,5 @@
+{
+  "name": "GridMaster - jqGrid Features Demo",
+  "description": "A modern React interactive showcase demonstrating common data grid features popularized by jqGrid: Pagination, Filtering, Sorting, Grouping, and Inline Editing, powered by Gemini for dynamic data generation.",
+  "requestFramePermissions": []
+}
