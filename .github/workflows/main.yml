@@ -1,0 +1,53 @@
+name: Vite/React CI/CD to Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    # 使用 node:20 的環境
+    runs-on: ubuntu-latest
+    
+    # 部署到 GitHub Pages 必需的權限設定
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # --- 1. 設定 Node.js 環境 ---
+      # Vite 專案需要 Node.js 環境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 建議使用穩定的 LTS 版本
+          cache: 'npm' # 啟用 npm 快取，加速依賴安裝
+          
+      # --- 2. 安裝依賴和建構專案 (替換 Jekyll 步驟) ---
+      - name: Install dependencies and Build project
+        run: |
+          # 檢查並安裝 package.json 中的依賴
+          npm install 
+          # 執行建構命令 (Vite 預設為 npm run build)
+          npm run build
+
+      # --- 3. 部署設定步驟 ---
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # --- 4. 上傳建構成品步驟 ---
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'dist' # <--- 修正: Vite 預設的輸出目錄是 dist
+
+      # --- 5. 部署到 GitHub Pages ---
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
